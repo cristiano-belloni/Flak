@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link  href="http://fonts.googleapis.com/css?family=Droid+Sans+Mono:regular" rel="stylesheet" type="text/css" >
+    <link rel=StyleSheet href="flak.css" type="text/css" media=screen>
+    <title>Flak</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <script type="text/javascript" src="../KievII/kievII.js"></script>
+  </head>
+  <body>
+
+
+    <form action="">
+          <input type="radio" name="buttontype" value="linear" /> linear
+          <input type="radio" name="buttontype" value="halfcosine" /> halfcosine
+          <input type="radio" name="buttontype" value="smooth" /> smooth
+          <input type="radio" name="buttontype" value="bezier2" /> bezier2
+          <input type="radio" name="buttontype" value="bezier3" /> bezier3
+          <button id="addbutton" type="button" onclick="addCB(this.form)">Add</button>
+          <button id="removebutton" type="button" onclick="removeCB()">Remove</button>
+          <button type="button" onclick="applyCB(this.form)">Apply</button>
+          <button id="clearbutton" type="button" onclick="clearCB()">CLEAR ALL</button>
+     </form>
+      
+    <div>
+    	<canvas id="overlay_area"
+            style="z-index: 8; position:absolute; left:0px; top:35px;"
+            height="762px" width="200px">
+            This text is displayed if your browser does not support HTML5 Canvas.
+        </canvas>
+            
+        <canvas id="wave_area"
+            style="z-index: 5;
+            position:absolute;
+            left:0px;
+            top:35px;"
+            height="762px" width="200px">
+            This text is displayed if your browser does not support HTML5 Canvas.
+            </canvas>
+            
+        <canvas id="edit_area"
+            style="z-index: 5;
+            position:absolute;
+            left:220px;
+            top:35px;"
+            height="762px" width="768px">
+            This text is displayed if your browser does not support HTML5 Canvas.
+        </canvas>
+    </div>
+      
+    <script type="text/javascript">
+    
+    Flak = {
+    	edit_area_canvas: null,
+    	wave_area_canvas: null,
+    	overlay_area_canvas: null,
+		ui: null,
+		wave_ui: null,
+		overlay_ui: null
+    }
+  
+    // Function.prototype.bind polyfill
+  	if ( !Function.prototype.bind ) {
+  	 
+  	  Function.prototype.bind = function( obj ) {
+  	    if(typeof this !== 'function') // closest thing possible to the ECMAScript 5 internal IsCallable function
+  	      throw new TypeError('Function.prototype.bind - what is trying to be bound is not callable');
+  	 
+  	    var slice = [].slice,
+  	        args = slice.call(arguments, 1),
+  	        self = this,
+  	        nop = function () {},
+  	        bound = function () {
+  	          return self.apply( this instanceof nop ? this : ( obj || {} ),
+  	                              args.concat( slice.call(arguments) ) );   
+  	        };
+  	 
+  	    bound.prototype = this.prototype;
+  	 
+  	    return bound;
+  	  };
+  	}
+        
+    Flak.edit_area_canvas = document.getElementById("edit_area");
+    Flak.ui = new K2.UI ({type: 'CANVAS2D', target: Flak.edit_area_canvas});
+    
+    Flak.overlay_area_canvas = document.getElementById("overlay_area");
+    Flak.overlay_ui = new K2.UI ({type: 'CANVAS2D', target: Flak.overlay_area_canvas});
+    
+    function successCallback (decoded) {
+        console.log ("Success!");
+        
+        var decoded_arrayL = decoded.getChannelData (0);
+        var decoded_arrayR = decoded.getChannelData (1);
+        console.log ("I got the data! ", decoded_arrayL.length, decoded_arrayL[0], decoded_arrayL[1000], decoded_arrayL[3000], decoded_arrayL[10000]);
+		
+		var waveID = 'wavebox_L';
+		
+		if (!(Flak.wave_ui.isElement(waveID))) {
+		
+	        // Wavebox parameters
+	        var waveboxArgs = {
+	            ID: waveID,
+	            top: 0,
+	            left: 0,
+	            width: Flak.wave_area_canvas.width,
+	            height: Flak.wave_area_canvas.height,
+	            // Todo must invert here
+	            orientation: 1,
+	            isListening: true,
+				waveColor: '#CC0000'
+	        };
+	        
+	        waveboxArgs.onValueSet = function () {
+	            var that = this;
+	            return function (slot, value) {
+	                console.log ("onValueSet callback: slot is ", slot, " and value is ", value, " while that is ", that);
+	                Flak.wave_ui.refresh();
+	            };
+	    	}();
+	
+	        var waveBox_L = new K2.Wavebox(waveboxArgs);
+	        
+	
+	        Flak.wave_ui.addElement(waveBox_L);
+        }
+
+		// Reverse array for graphical purposes
+		var temp32Array = Array.prototype.reverse.call(decoded_arrayL);
+		//var temp32Array = decoded_arrayL;
+        Flak.wave_ui.setValue ({elementID: waveID, slot: "waveboxsignal", value: temp32Array});     
+
+        Flak.wave_ui.refresh();
+        
+        
+    }
+    
+    function errorCallback () {
+        console.log ("Error!");
+    }   
+    
+    function handleReaderLoad(evt) {
+        console.log (evt);
+        
+        console.log ("Decoding file");
+        
+        context.decodeAudioData(evt.target.result, successCallback, errorCallback);
+        
+    }
+    
+    function handleFiles (files) {
+        
+        var file = files[0];
+
+        console.log ("Loading ", file.name);
+
+        var reader = new FileReader();
+
+        // init the reader event handlers
+        reader.onload = handleReaderLoad;
+
+        // begin the read operation
+        reader.readAsArrayBuffer(file);
+    }
+ 
+	function drop (evt) {
+		evt.stopPropagation();
+        evt.preventDefault();
+ 
+        var files = evt.dataTransfer.files;
+        var count = files.length;
+ 
+        // Only call the handler if 1 or more files was dropped.
+        if (count > 0)
+        handleFiles(files);
+    }
+ 
+    function noopHandler(evt) {
+        evt.stopPropagation();
+        evt.preventDefault();
+    }
+            
+    var dropbox = document.getElementById("overlay_area");
+ 
+    // init event handlers
+    dropbox.addEventListener("dragenter", noopHandler, false);
+    dropbox.addEventListener("dragexit", noopHandler, false);
+    dropbox.addEventListener("dragover", noopHandler, false);
+    dropbox.addEventListener("drop", drop, false);
+    
+    context = new webkitAudioContext();
+    source = context.createBufferSource();
+
+    // Connect audio processing graph
+    source.connect(context.destination);
+    
+    // Initialize Wave UI
+    //if (Flak.wave_ui !== null) {
+        Flak.wave_area_canvas = document.getElementById("wave_area");
+		Flak.wave_ui = new K2.UI ({type: 'CANVAS2D', target: Flak.wave_area_canvas});
+	//}
+	
+	// the Wave Grid
+    var waveGridArgs = {
+        ID: "wave_grid",
+        top: 0,
+        left: 0,
+        width: Flak.edit_area_canvas.width,
+        height: Flak.edit_area_canvas.height,
+        columns: 4,
+        rows: 16,
+        style: 'dashed',
+        lineColor: 'PapayaWhip',
+        bgColor: '#1f2020',
+        lineWidth: 0.1,
+        dashArray: [12,4],
+    };
+    
+    var waveGrid = new K2.Grid(waveGridArgs);
+    Flak.wave_ui.addElement(waveGrid);
+    Flak.wave_ui.refresh();
+
+    // the Edit Grid
+    var gridArgs = {
+        ID: "grid",
+        top: 0,
+        left: 0,
+        width: Flak.edit_area_canvas.width,
+        height: Flak.edit_area_canvas.height,
+        columns: 16,
+        rows: 16,
+        style: 'dashed',
+        lineColor: 'PapayaWhip',
+        bgColor: '#1f2020',
+        lineWidth: 0.1,
+        dashArray: [12,4],
+    };
+
+    var grid = new K2.Grid(gridArgs);
+    
+    Flak.ui.addElement(grid);
+    
+    // The Overlay Bar
+    barArgs = {
+            ID: "bar",
+            left: 0,
+            top : 0,
+            orientation: 1,
+            thickness: 4,
+            height: Flak.overlay_area_canvas.height,
+            width: Flak.overlay_area_canvas.width,
+            onValueSet: function (slot, value) {
+                console.log ("Event on slot " + slot + " with value " + value);
+                Flak.overlay_ui.refresh();
+            }.bind(this),
+            barColor: 'LightGreen',
+            transparency: 0.5,
+            isListening: true
+        };
+        
+    Flak.overlay_ui.addElement(new K2.Bar(barArgs));
+    Flak.overlay_ui.refresh();
+    
+    // Initialize Curve
+    
+    // Editor callback
+    var editorCallback = function (slot, value, element) {
+    	if (slot === 'points') {
+    		var where = Flak.ui.getProp (element, 'whereHappened');
+    		Flak.overlay_ui.setValue ({elementID: 'bar', slot: "barPos", value: where});
+    	}
+    }
+    
+    var curveEditor = new CurveEditor ({
+    	ui: Flak.ui,
+    	canvas: Flak.edit_area_canvas,
+    	helperColor: "white",
+    	curveColor: "LemonChiffon",
+    	terminalPointFill: "SandyBrown",
+    	selectedCurveColor: "Crimson",
+    	callback: editorCallback,
+    	curveLabels: false,
+    	/*xMonotone: true*/
+    });
+    
+    function parseCurveType (frm) { 
+        var curveType = null;
+        var grade = null;
+            
+            for (i = 0; i < frm.buttontype.length; i++) {
+                if (frm.buttontype[i].checked) {
+                    curveType = frm.buttontype[i].value;
+                }
+            }
+            
+            if (curveType === null) curveType = 'linear';
+            
+            console.log ('Add: curve type is ' + curveType);
+            
+            if (curveType.indexOf('bezier') == 0) {
+                var grade = parseInt(curveType.charAt(6), 10);
+                curveType = 'bezier';
+                console.log ("Curve is bezier and grade is " + grade);
+            }
+            
+            return [curveType, grade];
+    }
+    
+    function addCB (frm) {
+        var parsed = parseCurveType (frm);
+        curveEditor.addCurve(parsed[0], parsed[1]);
+    }
+    
+    function removeCB () {
+        curveEditor.removeCurve();
+    }
+    
+    function clearCB () {
+        curveEditor.clearCurve();
+    }
+    
+    function applyCB (frm) {
+        var parsed = parseCurveType (frm);
+        curveEditor.modifyCurve(parsed[0], parsed[1]);
+    }
+    
+    /* Add the initial diagonal curve in the editor */
+    curveEditor.addCurve('linear', 1, [0, Flak.edit_area_canvas.height], [Flak.edit_area_canvas.width, 0]);
+    
+                
+    Flak.ui.refresh();
+
+
+    </script>
+  </body>
+</html>
