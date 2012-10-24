@@ -20,6 +20,7 @@
           <button id="removebutton" type="button" onclick="removeCB()">Remove</button>
           <button type="button" onclick="applyCB(this.form)">Apply</button>
           <button id="clearbutton" type="button" onclick="clearCB()">CLEAR ALL</button>
+          <button id="playbutton" type="button" onclick="play()">play</button>
      </form>
       
     <div>
@@ -56,7 +57,8 @@
     	overlay_area_canvas: null,
 		ui: null,
 		wave_ui: null,
-		overlay_ui: null
+		overlay_ui: null,
+		curveEditor: null
     }
   
     // Function.prototype.bind polyfill
@@ -90,9 +92,11 @@
     function successCallback (decoded) {
         console.log ("Success!");
         
-        var decoded_arrayL = decoded.getChannelData (0);
-        var decoded_arrayR = decoded.getChannelData (1);
-        console.log ("I got the data! ", decoded_arrayL.length, decoded_arrayL[0], decoded_arrayL[1000], decoded_arrayL[3000], decoded_arrayL[10000]);
+        Flak.overlay_ui.setVisible('bar', true);
+        
+        Flak.decoded_arrayL = decoded.getChannelData (0);
+        Flak.decoded_arrayR = decoded.getChannelData (1);
+        console.log ("I got the data!");
 		
 		var waveID = 'wavebox_L';
 		
@@ -108,7 +112,8 @@
 	            // Todo must invert here
 	            orientation: 1,
 	            isListening: true,
-				waveColor: '#CC0000'
+				waveColor: '#CC0000',
+				transparency: 0.8
 	        };
 	        
 	        waveboxArgs.onValueSet = function () {
@@ -126,7 +131,7 @@
         }
 
 		// Reverse array for graphical purposes
-		var temp32Array = Array.prototype.reverse.call(decoded_arrayL);
+		var temp32Array = Array.prototype.reverse.call(Flak.decoded_arrayL);
 		//var temp32Array = decoded_arrayL;
         Flak.wave_ui.setValue ({elementID: waveID, slot: "waveboxsignal", value: temp32Array});     
 
@@ -137,6 +142,7 @@
     
     function errorCallback () {
         console.log ("Error!");
+        Flak.overlay_ui.setVisible('bar', false);
     }   
     
     function handleReaderLoad(evt) {
@@ -205,15 +211,15 @@
         ID: "wave_grid",
         top: 0,
         left: 0,
-        width: Flak.edit_area_canvas.width,
-        height: Flak.edit_area_canvas.height,
-        columns: 4,
+        width: Flak.wave_area_canvas.width,
+        height: Flak.wave_area_canvas.height,
+        columns: 2,
         rows: 16,
         style: 'dashed',
-        lineColor: 'PapayaWhip',
+        lineColor: 'yellow',
         bgColor: '#1f2020',
-        lineWidth: 0.1,
-        dashArray: [12,4],
+        lineWidth: 0.2,
+        dashArray: [10,2]
     };
     
     var waveGrid = new K2.Grid(waveGridArgs);
@@ -259,6 +265,7 @@
         };
         
     Flak.overlay_ui.addElement(new K2.Bar(barArgs));
+    Flak.overlay_ui.setVisible('bar', false);
     Flak.overlay_ui.refresh();
     
     // Initialize Curve
@@ -271,7 +278,7 @@
     	}
     }
     
-    var curveEditor = new CurveEditor ({
+	Flak.curveEditor = new CurveEditor ({
     	ui: Flak.ui,
     	canvas: Flak.edit_area_canvas,
     	helperColor: "white",
@@ -280,7 +287,7 @@
     	selectedCurveColor: "Crimson",
     	callback: editorCallback,
     	curveLabels: false,
-    	/*xMonotone: true*/
+    	xMonotone: true
     });
     
     function parseCurveType (frm) { 
@@ -308,24 +315,48 @@
     
     function addCB (frm) {
         var parsed = parseCurveType (frm);
-        curveEditor.addCurve(parsed[0], parsed[1]);
+        Flak.curveEditor.addCurve(parsed[0], parsed[1]);
     }
     
     function removeCB () {
-        curveEditor.removeCurve();
+        Flak.curveEditor.removeCurve();
     }
     
     function clearCB () {
-        curveEditor.clearCurve();
+        Flak.curveEditor.clearCurve();
     }
     
     function applyCB (frm) {
         var parsed = parseCurveType (frm);
-        curveEditor.modifyCurve(parsed[0], parsed[1]);
+        Flak.curveEditor.modifyCurve(parsed[0], parsed[1]);
+    }
+    
+    function play (frm) {
+        console.log ("Playing");
+        var curveArray = Flak.curveEditor.status.curveArray;
+        for (var i = 0; i < curveArray.length; i+=1) {
+        	var curve = Flak.ui.getElement (curveArray[i]);
+        	/* Time: 4 squares = the entire sample */
+        	var unitaryTime = Flak.edit_area_canvas.width / 4;
+        	/* sampleStartValue in the waveform: y value of the starting point of the curve
+        	 * divided for the height of the canvas,
+        	 * multiplied by the total sample number
+        	 */
+        	var sampleStartValue = (Flak.edit_area_canvas.height - curve.values.points[0][1]) / Flak.edit_area_canvas.height * Flak.decoded_arrayL.length;
+        	/* Same for the end value */
+        	var sampleEndValue = (Flak.edit_area_canvas.height - curve.values.points[curve.values.points.length - 1][1]) / Flak.edit_area_canvas.height * Flak.decoded_arrayL.length;
+        	
+        	/* samplesToPlay depends on the width of the curve (time) */
+        	var samplesToPlay = (curve.values.points[curve.values.points.length - 1][0] - curve.values.points[0][0]) / Flak.edit_area_canvas.width * 4;
+        	
+        	console.log ("curve is: ", curveArray[i], "start / end / len: ", sampleStartValue, sampleEndValue, Flak.decoded_arrayL.length);
+        	console.log ("Samples to play: ", samplesToPlay, samplesToPlay * Flak.decoded_arrayL.length);
+        }
+        
     }
     
     /* Add the initial diagonal curve in the editor */
-    curveEditor.addCurve('linear', 1, [0, Flak.edit_area_canvas.height], [Flak.edit_area_canvas.width, 0]);
+    Flak.curveEditor.addCurve('linear', 1, [0, Flak.edit_area_canvas.height], [Flak.edit_area_canvas.width, 0]);
     
                 
     Flak.ui.refresh();
