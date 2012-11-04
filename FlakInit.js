@@ -6,6 +6,7 @@ var Flak = {
 	wave_ui: null,
 	overlay_ui: null,
 	curveEditor: null,
+	barSelector: null,
 	nSamples: 2048,
 	bigPlayArray: [],
 	currentSample: 0
@@ -99,7 +100,7 @@ Flak.init = function () {
     Flak.ui.addElement(grid);
     
     // The Overlay Bar
-    barArgs = {
+    var barArgs = {
             ID: "bar",
             left: 0,
             top : 0,
@@ -112,8 +113,7 @@ Flak.init = function () {
                 Flak.overlay_ui.refresh();
             }.bind(this),
             barColor: 'LightGreen',
-            transparency: 0.5,
-            isListening: true
+            transparency: 0.5
         };
         
     Flak.overlay_ui.addElement(new K2.Bar(barArgs));
@@ -143,6 +143,30 @@ Flak.init = function () {
     
     /* Add the initial diagonal curve in the editor */
     Flak.curveEditor.addCurve('linear', 1, [0, Flak.edit_area_canvas.height], [Flak.edit_area_canvas.width, 0]);
+    
+    /* Volume area */
+    var volAreaArgs = {
+    	ID: "volArea",
+        left: 0,
+        top : 0,
+        thickness: 0,
+        height: Flak.edit_area_canvas.height,
+        width: Flak.edit_area_canvas.width,
+        onValueSet: function (slot, value) {
+            console.log ("Event on slot " + slot + " with value " + value);
+            Flak.ui.refresh();
+        },
+        color: 'black',
+        transparency: 0.5,
+        move: 'none',
+        drag: {top: false, bottom: false, right: false, left: false},
+        isListening: false
+    };
+    Flak.ui.addElement(new K2.Area(volAreaArgs));
+    Flak.ui.setVisible (volAreaArgs.ID, false);
+    
+    /* Bar selector */
+    Flak.barSelector = new BarSelect ({ui: Flak.ui, canvas: Flak.edit_area_canvas});
                 
     Flak.ui.refresh();
 	
