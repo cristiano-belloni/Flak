@@ -10,6 +10,8 @@
     <script type="text/javascript" src="FlakSound.js"></script>
     <script type="text/javascript" src="FlakDrop.js"></script>
     <script type="text/javascript" src="FlakCurveEditor.js"></script>
+    <script type="text/javascript" src="FlakEditCanvas.js"></script>
+    <script type="text/javascript" src="FlakVolumeEditor.js"></script>
   </head>
   <body>
 
@@ -26,6 +28,8 @@
           <button id="clearbutton" type="button" onclick="Flak.clearCB()">CLEAR ALL</button>
           <button id="playbutton" type="button" onclick="Flak.play()">play</button>
           <button id="playbutton" type="button" onclick="Flak.stop()">stop</button>
+          <button id="curveedit" type="button" onclick="Flak.curveEdit()">Edit Curve</button>
+          <button id="volumeedit" type="button" onclick="Flak.volumeEdit()">Edit Volume</button>
      </form>
       
     <div>
@@ -47,7 +51,7 @@
         <canvas id="edit_area"
             style="z-index: 5;
             position:absolute;
-            left:220px;
+            left:202px;
             top:35px;"
             height="762px" width="768px">
             This text is displayed if your browser does not support HTML5 Canvas.

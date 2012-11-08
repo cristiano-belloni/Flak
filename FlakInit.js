@@ -9,7 +9,9 @@ var Flak = {
 	barSelector: null,
 	nSamples: 2048,
 	bigPlayArray: [],
-	currentSample: 0
+	currentSample: 0,
+	volEditor: null,
+	arraySplitted: null
 };
 
 Flak.init = function () {
@@ -34,6 +36,8 @@ Flak.init = function () {
   	    return bound;
   	  };
   	}
+  	
+  	window.sessionStorage.editMode = 'curve';
         
     // INITIALIZE UIs
     Flak.edit_area_canvas = document.getElementById("edit_area");
@@ -138,35 +142,23 @@ Flak.init = function () {
     	selectedCurveColor: "Crimson",
     	callback: editorCallback,
     	curveLabels: false,
-    	xMonotone: true
+    	xMonotone: true,
+    	zIndex: 10
     });
     
     /* Add the initial diagonal curve in the editor */
     Flak.curveEditor.addCurve('linear', 1, [0, Flak.edit_area_canvas.height], [Flak.edit_area_canvas.width, 0]);
     
-    /* Volume area */
-    var volAreaArgs = {
-    	ID: "volArea",
-        left: 0,
-        top : 0,
-        thickness: 0,
-        height: Flak.edit_area_canvas.height,
-        width: Flak.edit_area_canvas.width,
-        onValueSet: function (slot, value) {
-            console.log ("Event on slot " + slot + " with value " + value);
-            Flak.ui.refresh();
-        },
-        color: 'black',
-        transparency: 0.5,
-        move: 'none',
-        drag: {top: false, bottom: false, right: false, left: false},
-        isListening: false
-    };
-    Flak.ui.addElement(new K2.Area(volAreaArgs));
-    Flak.ui.setVisible (volAreaArgs.ID, false);
-    
     /* Bar selector */
-    Flak.barSelector = new BarSelect ({ui: Flak.ui, canvas: Flak.edit_area_canvas});
+    Flak.barSelector = new BarSelect ({ ui: Flak.ui,
+                                        canvas: Flak.edit_area_canvas,
+                                        callback: Flak.volumeCallback,
+                                        areaColor: "white",
+                                        areaTransparency: 0.1,
+                                        zIndex: 500});
+                                        
+    Flak.volEditor = new Flak.VolumeEditor (Flak.edit_area_canvas.width);
+    Flak.volumeAreaRefresh();
                 
     Flak.ui.refresh();
 	
