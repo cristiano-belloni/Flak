@@ -4,7 +4,11 @@
     <link  href="http://fonts.googleapis.com/css?family=Droid+Sans+Mono:regular" rel="stylesheet" type="text/css" >
     <link rel=StyleSheet href="flak.css" type="text/css" media=screen>
     <title>Flak</title>
+    <!-- Bootstrap -->
+    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+    <script src="bootstrap/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="../KievII/kievII.js"></script>
     <script type="text/javascript" src="FlakInit.js"></script>
     <script type="text/javascript" src="FlakSound.js"></script>
@@ -13,28 +17,63 @@
     <script type="text/javascript" src="FlakEditCanvas.js"></script>
     <script type="text/javascript" src="FlakVolumeEditor.js"></script>
   </head>
-  <body>
+  <body style="background-color: #181717;">
 
-
-    <form action="">
-          <input type="radio" name="buttontype" value="linear" /> linear
-          <input type="radio" name="buttontype" value="halfcosine" /> halfcosine
-          <input type="radio" name="buttontype" value="smooth" /> smooth
-          <input type="radio" name="buttontype" value="bezier2" /> bezier2
-          <input type="radio" name="buttontype" value="bezier3" /> bezier3
-          <button id="addbutton" type="button" onclick="Flak.addCB(this.form)">Add</button>
-          <button id="removebutton" type="button" onclick="Flak.removeCB()">Remove</button>
-          <button type="button" onclick="Flak.applyCB(this.form)">Apply</button>
-          <button id="clearbutton" type="button" onclick="Flak.clearCB()">CLEAR ALL</button>
-          <button id="playbutton" type="button" onclick="Flak.play()">play</button>
-          <button id="playbutton" type="button" onclick="Flak.stop()">stop</button>
-          <button id="curveedit" type="button" onclick="Flak.curveEdit()">Edit Curve</button>
-          <button id="volumeedit" type="button" onclick="Flak.volumeEdit()">Edit Volume</button>
-     </form>
+    <div class="navbar navbar-inverse">
+        <div class="navbar-inner">
+            <div class="container">
+                  <a class="brand" href="#">Flak</a>
+                  <ul class="nav">
+                      <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                          Menu
+                          <b class="caret"></b>
+                        </a>
+                        <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+                          <li><a href="#">Menu 1</a></li>
+                          <li><a href="#">Menu 2</a></li>
+                          <li><a href="#">Menu 3</a></li>
+                          <li class="divider"></li>
+                          <li><a href="#">Menu 4</a></li>
+                        </ul>
+                      </li>
+                      <li class="divider-vertical"></li>
+                      <div class="btn-group" data-toggle="buttons-radio">
+                        <button title="Play" class="btn btn-success" id="playbutton" type="button" onclick="Flak.play()"><i class="icon-play"></i></button>
+                        <button title="Stop" class="btn btn-danger" id="stopbutton" type="button" onclick="Flak.stop()"><i class="icon-stop"></i></button>
+                      </div>
+                      <div class="btn-group" data-toggle="buttons-radio">
+                        <button title="Curve Edit mode" class="btn btn-warning" id="curveedit" type="button" onclick="Flak.curveEdit()"><i class="icon-edit"></i> Curve</button>
+                        <button title="Volume Edit mode" class="btn btn-warning" id="volumeedit" type="button" onclick="Flak.volumeEdit()"><i class="icon-volume-up"></i> Volume</button>
+                      </div>
+                      <span id='curveIcons' style="margin-left: 150px;">
+                          <div class="btn-group" data-toggle="buttons-radio">
+                              <button title="Linear" id="linear" type="button" onclick="Flak.curveTypeClicked(this.id)" class="btn btn-small">Linear</button>
+                              <button title="Half cosine" id="halfcosine" type="button" onclick="Flak.curveTypeClicked(this.id)" class="btn btn-small">hCos</button>
+                              <button title="Smooh" id="smooth" type="button" onclick="Flak.curveTypeClicked(this.id)" class="btn btn-small">Smooth</button>
+                              <button title="Quadratic Bezier" id="bezier2" type="button" onclick="Flak.curveTypeClicked(this.id)" class="btn btn-small">B&sup2;</button>
+                              <button title="Cubic Bezier" id="bezier3" type="button" onclick="Flak.curveTypeClicked(this.id)" class="btn btn-small">B&sup3;</button>
+                          </div>
+                          <button title="Add Curve" class="btn btn-small" id="addbutton" type="button" onclick="Flak.addCB()"><i class="icon-plus"></i></button>
+                          <button title="Remove Curve" class="btn btn-small" id="removebutton" type="button" onclick="Flak.removeCB()"><i class="icon-remove"></i></button>
+                          <button title="Clear All" class="btn btn-small" id="clearbutton" type="button" onclick="Flak.clearCB()"><i class="icon-remove-circle"></i></button>
+                      </span>
+                      <span id='volumeIcons' style="margin-left: 150px;">
+                          <div class="btn-group" data-toggle="buttons-radio">
+                              <button title="Select to mute" type="button" id="muteButton" onclick="Flak.muteUnmute=1" class="btn btn-small">Mute</button>
+                              <button title="Select to unmute" type="button" id="unmuteButton" onclick="Flak.muteUnmute=0" class="btn btn-small">unMute</button>
+                          </div>
+                          <button title="Mute All" class="btn btn-small" id="muteAllbutton" type="button" onclick="Flak.muteVolumeCB()">Mute all</button>
+                          <button title="Unmute All" class="btn btn-small" id="unmuteAllbutton" type="button" onclick="Flak.unmuteVolumeCB()">Unmute all</i></button>
+                      </span>
+                  </ul>
+            </div>
+         </div>
+     </div>
       
-    <div>
+    <div style="position:relative;">
     	<canvas id="overlay_area"
-            style="z-index: 8; position:absolute; left:0px; top:35px;"
+            style="z-index: 8; position:absolute; left:0px; top:0px;"
             height="762px" width="200px">
             This text is displayed if your browser does not support HTML5 Canvas.
         </canvas>
@@ -43,7 +82,7 @@
             style="z-index: 5;
             position:absolute;
             left:0px;
-            top:35px;"
+            top:0px;"
             height="762px" width="200px">
             This text is displayed if your browser does not support HTML5 Canvas.
             </canvas>
@@ -52,7 +91,7 @@
             style="z-index: 5;
             position:absolute;
             left:202px;
-            top:35px;"
+            top:0px;"
             height="762px" width="768px">
             This text is displayed if your browser does not support HTML5 Canvas.
         </canvas>
@@ -60,6 +99,15 @@
       
     <script type="text/javascript">
     
+    // html init stuff
+    $('.nav-tabs').button();
+    $('.dropdown-toggle').dropdown();
+    $("#volumeIcons").hide();
+    $('#stopbutton').button('toggle');
+    $('#curveedit').button('toggle');
+    $('#muteButton').button('toggle');
+    
+    // App init
     Flak.init();
     
     </script>

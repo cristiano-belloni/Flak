@@ -63,8 +63,7 @@ Flak.volumeCallback = function (slot, value, element) {
             var width = Flak.barSelector.selectWidth;
             var end = start + width;
             
-            // TODOTODO
-            var selectStatus = 1;
+            var selectStatus = Flak.muteUnmute;
             
             Flak.volEditor.fillInterval (start, end, selectStatus);
             

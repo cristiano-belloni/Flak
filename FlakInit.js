@@ -11,7 +11,8 @@ var Flak = {
 	bigPlayArray: [],
 	currentSample: 0,
 	volEditor: null,
-	arraySplitted: null
+	arraySplitted: null,
+	muteUnmute: 1 /* 1 is mute, 0 is full volume */
 };
 
 Flak.init = function () {
@@ -109,7 +110,7 @@ Flak.init = function () {
             left: 0,
             top : 0,
             orientation: 1,
-            thickness: 4,
+            thickness: 5,
             height: Flak.overlay_area_canvas.height,
             width: Flak.overlay_area_canvas.width,
             onValueSet: function (slot, value) {
@@ -130,6 +131,14 @@ Flak.init = function () {
     	if (slot === 'points') {
     		var where = Flak.ui.getProp (element, 'whereHappened');
     		Flak.overlay_ui.setValue ({elementID: 'bar', slot: "barPos", value: where});
+    	}
+    	if (slot === 'selected') {
+    	    var curveType = Flak.ui.getElement(element).curveType;
+    	    var curveGrade = Flak.ui.getElement(element).values.points.length - 1;
+    	    if (curveType === 'bezier') {
+    	        curveType += curveGrade;
+    	    }
+    	    $('#' + curveType).button('toggle');
     	}
     }
     
