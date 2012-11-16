@@ -1,6 +1,7 @@
 @curveWidth: 768px;
 @waveWidth: 200px;
-@areaMargin: 2px;
+@areaMargin: 6px;
+@areaBorder: 2px;
 @totalWidth: (@curveWidth + @waveWidth + @areaMargin);
 @totalHeight: 762px;
 
@@ -8,7 +9,8 @@
 @volumeIconsWidth: 231px;
 
 .canvasStyle {
-  position:absolute;
+  position: absolute;
+  border: @areaBorder solid #474747;
 }
 
 .waveAreaStyle {

@@ -131,6 +131,20 @@
         $(this).attr('width', parseInt($(this).css('width')));
         $(this).attr('height', parseInt($(this).css('height')));
     });
+    
+    /*
+     * <input type = "button" id = "clickme" value="Click me!"/>
+       <div id = "alert_placeholder"></div>
+     * bootstrap_alert = function() {}
+       bootstrap_alert.warning = function(message) {
+            $('#alert_placeholder').html('<div class="alert"><a class="close" data-dismiss="alert">×</a><span>'+message+'</span></div>')
+        }
+    
+
+        $('#clickme').on('click', function() {
+            bootstrap_alert.warning('Your text goes here');
+    });
+     */
   
     // App init
     Flak.init();
