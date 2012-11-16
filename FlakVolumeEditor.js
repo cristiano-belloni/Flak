@@ -53,6 +53,10 @@ Flak.VolumeEditor = function (width) {
         }
         return ret;
     }
+    
+    this.getVolumeValue = function (sample) {
+        return this.volumeArray[sample];
+    }
 }; 
 
 Flak.volumeCallback = function (slot, value, element) {

@@ -11,8 +11,10 @@ Flak.process = function(event) {
         for (var i = 0; i < dataLen; i+=1) {
             
             // y values are already reversed
-            if (Flak.currentSample > Flak.bigPlayArray.length) {
+            if (Flak.currentSample >= Flak.bigPlayArray.length) {
                 Flak.playing = false;
+                // This should mitigate clicks
+                Flak.gainNode.gain.value = 0;
                 break;
             }
             
@@ -23,7 +25,17 @@ Flak.process = function(event) {
                 if (!(Flak.currentSample % visStep)) {
                     var yValue = index * Flak.wave_area_canvas.height / Flak.decoded_arrayL.length;
                     Flak.overlay_ui.setValue ({elementID: 'bar', slot: "barPos", value: [0,yValue]});
-                } 
+                }
+                
+                // Volume values
+                var xValue = Math.ceil(Flak.currentSample * Flak.wave_area_canvas.width / Flak.decoded_arrayL.length);
+                if (Flak.currentVolume !== Flak.volEditor.getVolumeValue(xValue)) {
+                    Flak.currentVolume = Flak.volEditor.getVolumeValue(xValue);
+                    // Muted is 1, invert
+                    console.log ("Changing gain to ", Math.abs (Flak.currentVolume - 1));
+                    Flak.gainNode.gain.value = Math.abs (Flak.currentVolume - 1);
+                }
+                 
                 
                 outputArray[0][i] = Flak.decoded_arrayL[index];
                 outputArray[1][i] = Flak.decoded_arrayR[index];
@@ -101,6 +113,7 @@ Flak.play  = function () {
             
         }
     
+    Flak.gainNode.gain.value = 1;
     // Start playing
     Flak.playing = true;
         
@@ -109,4 +122,5 @@ Flak.play  = function () {
 Flak.stop = function () {
     console.log ("Stopping");
     Flak.playing = false;
+    Flak.currentVolume = 0;
 };
