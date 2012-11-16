@@ -51,6 +51,7 @@ Flak.successCallback = function (decoded) {
 
 Flak.errorCallback = function () {
     console.log ("Error!");
+    alert ("Error decoding ");
     Flak.overlay_ui.setVisible('bar', false);
 }   
 

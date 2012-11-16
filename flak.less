@@ -1,0 +1,56 @@
+@curveWidth: 768px;
+@waveWidth: 200px;
+@areaMargin: 2px;
+@totalWidth: (@curveWidth + @waveWidth + @areaMargin);
+@totalHeight: 762px;
+
+@curveIconsWidth: 140px;
+@volumeIconsWidth: 231px;
+
+.canvasStyle {
+  position:absolute;
+}
+
+.waveAreaStyle {
+  width: @waveWidth;
+  height: @totalHeight;
+  top: 0px;
+  left: 0px;
+}
+
+.curveAreaStyle {
+  width: @curveWidth;
+  height: @totalHeight;
+  top: 0px;
+  left: (@waveWidth + @areaMargin);
+}
+
+#overlay_area {
+  .canvasStyle;
+  .waveAreaStyle;
+  z-index: 8;
+}
+
+#wave_area {
+  .canvasStyle;
+  .waveAreaStyle;
+  z-index: 5;
+}
+
+#edit_area {
+  .canvasStyle;
+  .curveAreaStyle;
+  z-index: 5;
+}
+
+.canvasAligned {
+  width: @totalWidth;
+}
+
+#curveIcons {
+  margin-left: @curveIconsWidth;
+}
+#volumeIcons
+{
+  margin-left: @volumeIconsWidth;
+}

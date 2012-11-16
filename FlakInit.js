@@ -148,7 +148,7 @@ Flak.init = function () {
     	helperColor: "white",
     	curveColor: "LemonChiffon",
     	terminalPointFill: "SandyBrown",
-    	selectedCurveColor: "Crimson",
+    	selectedCurveColor: "#F00",
     	callback: editorCallback,
     	curveLabels: false,
     	xMonotone: true,

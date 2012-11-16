@@ -9,6 +9,10 @@
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
     <script src="bootstrap/js/bootstrap.min.js"></script>
+    
+    <link rel="stylesheet/less" type="text/css" href="flak.less">
+    <script src="less-1.3.1.min.js" type="text/javascript"></script>
+    
     <script type="text/javascript" src="../KievII/kievII.js"></script>
     <script type="text/javascript" src="FlakInit.js"></script>
     <script type="text/javascript" src="FlakSound.js"></script>
@@ -19,7 +23,7 @@
   </head>
   <body style="background-color: #181717;">
 
-    <div class="navbar navbar-inverse">
+    <div class="navbar navbar-inverse canvasAligned">
         <div class="navbar-inner">
             <div class="container">
                   <a class="brand" href="#">Flak</a>
@@ -46,7 +50,7 @@
                         <button title="Curve Edit mode" class="btn btn-warning" id="curveedit" type="button" onclick="Flak.curveEdit()"><i class="icon-edit"></i> Curve</button>
                         <button title="Volume Edit mode" class="btn btn-warning" id="volumeedit" type="button" onclick="Flak.volumeEdit()"><i class="icon-volume-up"></i> Volume</button>
                       </div>
-                      <span id='curveIcons' style="margin-left: 150px;">
+                      <span id='curveIcons'>
                           <div class="btn-group" data-toggle="buttons-radio">
                               <button title="Linear" id="linear" type="button" onclick="Flak.curveTypeClicked(this.id)" class="btn btn-small">Linear</button>
                               <button title="Half cosine" id="halfcosine" type="button" onclick="Flak.curveTypeClicked(this.id)" class="btn btn-small">hCos</button>
@@ -58,7 +62,7 @@
                           <button title="Remove Curve" class="btn btn-small" id="removebutton" type="button" onclick="Flak.removeCB()"><i class="icon-remove"></i></button>
                           <button title="Clear All" class="btn btn-small" id="clearbutton" type="button" onclick="Flak.clearCB()"><i class="icon-remove-circle"></i></button>
                       </span>
-                      <span id='volumeIcons' style="margin-left: 150px;">
+                      <span id='volumeIcons'>
                           <div class="btn-group" data-toggle="buttons-radio">
                               <button title="Select to mute" type="button" id="muteButton" onclick="Flak.muteUnmute=1" class="btn btn-small">Mute</button>
                               <button title="Select to unmute" type="button" id="unmuteButton" onclick="Flak.muteUnmute=0" class="btn btn-small">unMute</button>
@@ -70,29 +74,42 @@
             </div>
          </div>
      </div>
+     
+     <!-- Modal -->
+    <div id="waitModal" data-show="false" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="waitModalLabel" aria-hidden="true">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="myModalLabel">Processing...</h3>
+      </div>
+      <div class="modal-body">
+        <div class="progress progress-striped active">
+            <div id="modalProgressBar" class="bar" style="width: 0%;"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+      </div>
+    </div>
+    
+    <!-- Alert -->
+    <div class="alert alert-block alert-error fade in canvasAligned">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        <h4 id="alertTitle" class="alert-heading">Error</h4>
+        <p id='alertText'>Change this and that and try again.</p>
+        <br />
+        <a class="btn btn-danger" class="close" data-dismiss="alert" href="#">Dismiss</a>
+      </div>
+    </div>
       
     <div style="position:relative;">
-    	<canvas id="overlay_area"
-            style="z-index: 8; position:absolute; left:0px; top:0px;"
-            height="762px" width="200px">
+    	<canvas id="overlay_area">
             This text is displayed if your browser does not support HTML5 Canvas.
         </canvas>
             
-        <canvas id="wave_area"
-            style="z-index: 5;
-            position:absolute;
-            left:0px;
-            top:0px;"
-            height="762px" width="200px">
+        <canvas id="wave_area">
             This text is displayed if your browser does not support HTML5 Canvas.
             </canvas>
             
-        <canvas id="edit_area"
-            style="z-index: 5;
-            position:absolute;
-            left:202px;
-            top:0px;"
-            height="762px" width="768px">
+        <canvas id="edit_area">
             This text is displayed if your browser does not support HTML5 Canvas.
         </canvas>
     </div>
@@ -106,7 +123,15 @@
     $('#stopbutton').button('toggle');
     $('#curveedit').button('toggle');
     $('#muteButton').button('toggle');
-    
+    //$('#waitModal').modal();
+    $(".alert").alert();
+  
+    // direct attribute and css attribute in HTML5  
+    $('canvas').each(function(index) {
+        $(this).attr('width', parseInt($(this).css('width')));
+        $(this).attr('height', parseInt($(this).css('height')));
+    });
+  
     // App init
     Flak.init();
     
