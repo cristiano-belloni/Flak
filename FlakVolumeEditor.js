@@ -10,7 +10,7 @@ Flak.volAreaArgs = {
     color: 'DarkRed',
     transparency: 0.2,
     move: 'none',
-    drag: {top: false, bottom: false, right: false, left: false},
+    dragBorders: {top: false, bottom: false, right: false, left: false},
     isListening: false
 };
 
@@ -63,8 +63,8 @@ Flak.volumeCallback = function (slot, value, element) {
     if (window.sessionStorage.editMode === 'volume') {
         if (slot === 'dragEnd') {
             /* Get the start / end x values of the barSelector */
-            var start = Flak.barSelector.selectStart;
-            var width = Flak.barSelector.selectWidth;
+            var start = Math.round(Flak.barSelector.selectStart);
+            var width = Math.round(Flak.barSelector.selectWidth);
             var end = start + width;
             
             var selectStatus = Flak.muteUnmute;
